@@ -667,7 +667,7 @@ const typeDefinitions = {
       skill: 'スキルアップを求めるあなたの市場価値は、思っているより高い可能性があります。今のタイミングで動けば、技術が身につく自社開発企業に転職できる可能性が高いです。エージェントに相談してみましょう。',
       info: '情報収集から始めたいあなたも、まずエージェントに登録するのが最短です。登録するだけで自分の市場価値がわかります。転職するかどうかは後から決めてOKです。'
     },
-    agents: ['levatech', 'geekly'],
+    agents: ['techgo', 'levatech', 'geekly'],
     shareText: '今すぐ脱出できる逸材タイプ🔥'
   },
   B: {
@@ -681,7 +681,7 @@ const typeDefinitions = {
       skill: 'スキルアップを目指すあなたは、転職によってより良い環境に移れる可能性があります。エージェントに相談すれば、あなたのスキルを正確に評価してもらえます。',
       info: '情報収集を始めるなら今がベストタイミングです。エージェントに登録するだけで、市場の求人・年収相場・自分の市場価値がわかります。完全無料なのでまず登録してみましょう。'
     },
-    agents: ['levatech', 'mynavi'],
+    agents: ['techgo', 'levatech', 'mynavi'],
     shareText: 'あと一歩で脱出できる準備完了タイプ💪'
   },
   C: {
@@ -739,12 +739,20 @@ const agentData = {
     url: 'https://mynavi-agent.jp/it/',  // ← アフィリリンクに変更
     primary: false
   },
+  techgo: {
+    rank: '1位',
+    name: 'TechGo（テックゴー）',
+    desc: 'ITエンジニア・ITコンサル特化のハイクラス転職。利用者の92%が年収アップ、平均138万円増。週末1日で選考完結。',
+    tags: ['ハイクラス特化', '年収アップ実績92%', '上流・自社開発'],
+    url: 'https://px.a8.net/svt/ejp?a8mat=4B3Y3C+AUKDMA+5B0Y+HVV0H',
+    primary: true
+  },
   onecareer: {
     rank: '参考',
     name: 'ワンキャリア転職',
     desc: '転職者のリアルな体験談・年収データが見れる転職サイト。情報収集に役立つ。',
     tags: ['転職体験談多数', '年収データ豊富', '情報収集向け'],
-    url: 'https://plus.onecareer.jp/',  // ← アフィリリンクに変更
+    url: 'https://px.a8.net/svt/ejp?a8mat=4B3Y3C+B8US4Y+5O7E+BWVTE',
     primary: false
   }
 };
@@ -850,12 +858,14 @@ function showResult(type) {
   document.getElementById('resultComment').textContent = data.comments[goal] || data.comments['info'];
 
   const agentList = document.getElementById('agentList');
-  agentList.innerHTML = data.agents.map(key => {
+  const rankLabels = ['1位', '2位', '3位', '参考'];
+  agentList.innerHTML = data.agents.map((key, idx) => {
     const agent = agentData[key];
+    const rankLabel = agent.rank === '参考' ? '参考' : (rankLabels[idx] || '参考');
     return `
       <div class="agent-card">
         <div class="agent-header">
-          <div class="agent-rank">${agent.rank}</div>
+          <div class="agent-rank">${rankLabel}</div>
           <div class="agent-name">${agent.name}</div>
         </div>
         <div class="agent-desc">${agent.desc}</div>
