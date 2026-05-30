@@ -271,6 +271,29 @@
     margin-top: 8px;
   }
 
+  .result-route {
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(77,255,180,0.06);
+    border: 1px solid rgba(77,255,180,0.2);
+    border-radius: 12px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .result-route .route-label {
+    font-size: 11px;
+    color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+  .result-route .route-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
   .section-title {
     font-size: 13px;
     font-weight: 700;
@@ -568,6 +591,7 @@
       <span class="result-emoji" id="resultEmoji"></span>
       <div class="result-type" id="resultType"></div>
       <div class="result-comment" id="resultComment"></div>
+      <div class="result-route" id="resultRoute"></div>
     </div>
 
     <div class="section-title">あなたにおすすめのエージェント</div>
@@ -668,6 +692,7 @@ const typeDefinitions = {
       info: '情報収集から始めたいあなたも、まずエージェントに登録するのが最短です。登録するだけで自分の市場価値がわかります。転職するかどうかは後から決めてOKです。'
     },
     agents: ['techgo', 'levatech', 'geekly'],
+    route: '自社開発・社内SE・SIer上流・ITコンサル',
     shareText: '今すぐ脱出できる逸材タイプ🔥'
   },
   B: {
@@ -681,7 +706,8 @@ const typeDefinitions = {
       skill: 'スキルアップを目指すあなたは、転職によってより良い環境に移れる可能性があります。エージェントに相談すれば、あなたのスキルを正確に評価してもらえます。',
       info: '情報収集を始めるなら今がベストタイミングです。エージェントに登録するだけで、市場の求人・年収相場・自分の市場価値がわかります。完全無料なのでまず登録してみましょう。'
     },
-    agents: ['techgo', 'levatech', 'mynavi'],
+    agents: ['levatech', 'geekly', 'mynavi'],
+    route: '自社開発・社内SE・QA専門職',
     shareText: 'あと一歩で脱出できる準備完了タイプ💪'
   },
   C: {
@@ -696,6 +722,7 @@ const typeDefinitions = {
       info: '情報収集から始めるあなたの判断は正しいです。エージェントへの登録は無料で、求人・年収相場・自分の市場価値を一気に知れます。まず登録してみましょう。'
     },
     agents: ['mynavi', 'onecareer'],
+    route: '社内SE・SIer上流・QA専門職',
     shareText: '着実に準備中の脱出予備軍タイプ📚'
   },
   D: {
@@ -710,6 +737,7 @@ const typeDefinitions = {
       info: '情報収集から始めるのは賢い判断です。ワンキャリア転職では転職者のリアルな体験談・年収データが見れます。まず情報を集めて、自分のキャリアをじっくり考えてみましょう。'
     },
     agents: ['onecareer', 'mynavi'],
+    route: 'まずは市場価値の把握・スキル棚卸し',
     shareText: 'まず情報収集から始める賢い動き方タイプ🌱'
   }
 };
@@ -742,8 +770,8 @@ const agentData = {
   techgo: {
     rank: '1位',
     name: 'TechGo（テックゴー）',
-    desc: 'ITエンジニア・ITコンサル特化のハイクラス転職。利用者の92%が年収アップ、平均138万円増。週末1日で選考完結。',
-    tags: ['ハイクラス特化', '年収アップ実績92%', '上流・自社開発'],
+    desc: '実務経験やスキルに自信がある方向け。ITエンジニア・ITコンサルのハイクラス転職に特化。利用者の92%が年収アップ、平均138万円増。',
+    tags: ['ハイクラス向け', '経験者向け', '年収アップ実績'],
     url: 'https://px.a8.net/svt/ejp?a8mat=4B3Y3C+AUKDMA+5B0Y+HVV0H',
     primary: true
   },
@@ -856,6 +884,12 @@ function showResult(type) {
   document.getElementById('resultType').innerHTML =
     `${data.typeLine1}<br><span class="highlight">${data.typeLine2}</span>`;
   document.getElementById('resultComment').textContent = data.comments[goal] || data.comments['info'];
+
+  // おすすめ転職ルートを表示
+  const routeEl = document.getElementById('resultRoute');
+  if (routeEl && data.route) {
+    routeEl.innerHTML = `<span class="route-label">あなたに近い転職ルート</span><span class="route-value">${data.route}</span>`;
+  }
 
   const agentList = document.getElementById('agentList');
   const rankLabels = ['1位', '2位', '3位', '参考'];
