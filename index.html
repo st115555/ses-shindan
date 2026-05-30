@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SES脱出タイプ診断 | SES業界調査員</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a26;
+    --border: #2a2a3a;
+    --accent: #ff4d6d;
+    --accent2: #4dffb4;
+    --accent3: #ffd166;
+    --text: #f0f0f5;
+    --muted: #8888aa;
+    --gradient: linear-gradient(135deg, #ff4d6d, #ff8c42);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .noise {
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    padding: 40px 0 32px;
+    animation: fadeDown 0.6s ease;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(255,77,109,0.15);
+    border: 1px solid rgba(255,77,109,0.3);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+  }
+
+  .title {
+    font-size: clamp(26px, 6vw, 38px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .title span {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .progress-wrap {
+    margin: 24px 0;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .q-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .q-text {
+    font-size: clamp(18px, 4vw, 22px);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .q-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    text-align: left;
+    width: 100%;
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--text);
+  }
+
+  .option:hover {
+    border-color: var(--accent);
+    background: rgba(255,77,109,0.08);
+    transform: translateX(4px);
+  }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(255,77,109,0.12);
+  }
+
+  .option-emoji { font-size: 22px; flex-shrink: 0; }
+  .option-text { line-height: 1.4; }
+
+  /* Loading */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .loading.active { display: block; animation: fadeUp 0.5s ease; }
+
+  .loader-ring {
+    width: 64px;
+    height: 64px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+
+  .loading-text { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .loading-sub { color: var(--muted); font-size: 13px; }
+
+  .loading-dots span {
+    animation: blink 1.4s infinite;
+    font-size: 20px;
+    color: var(--accent);
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Result */
+  .result { display: none; }
+  .result.active { display: block; animation: fadeUp 0.6s ease; }
+
+  .result-header {
+    text-align: center;
+    padding: 32px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at center, rgba(255,77,109,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .result-type-badge {
+    display: inline-block;
+    background: var(--gradient);
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .result-emoji { font-size: 56px; margin-bottom: 12px; display: block; }
+
+  .result-type {
+    font-size: clamp(20px, 5vw, 26px);
+    font-weight: 900;
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  .result-type .highlight {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .result-comment {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    text-align: left;
+    color: var(--text);
+    margin-top: 8px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 28px 0 14px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .agent-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .agent-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+
+  .agent-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .agent-rank {
+    background: var(--gradient);
+    color: white;
+    font-weight: 700;
+    font-size: 11px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .agent-name { font-weight: 700; font-size: 16px; }
+
+  .agent-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .agent-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .tag {
+    background: rgba(77,255,180,0.1);
+    border: 1px solid rgba(77,255,180,0.2);
+    color: var(--accent2);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .agent-btn {
+    display: block;
+    width: 100%;
+    background: var(--gradient);
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 13px;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .agent-btn:hover { opacity: 0.85; }
+
+  .agent-btn.secondary {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+  }
+
+  .agent-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .notice {
+    background: rgba(255,77,109,0.06);
+    border: 1px solid rgba(255,77,109,0.15);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 16px;
+  }
+
+  .share-section {
+    text-align: center;
+    margin-top: 28px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .share-title { font-weight: 700; margin-bottom: 6px; }
+  .share-sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #000;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 100px;
+    text-decoration: none;
+    border: 1.5px solid #333;
+    transition: all 0.2s;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .share-btn:hover { background: #111; border-color: #555; }
+
+  .retry-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .retry-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Start */
+  .start-screen { text-align: center; animation: fadeUp 0.6s ease; }
+
+  .start-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 24px;
+    margin-bottom: 20px;
+  }
+
+  .start-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 24px 0;
+  }
+
+  .stat {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 14px 8px;
+  }
+
+  .stat-num {
+    font-size: 20px;
+    font-weight: 900;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .start-btn {
+    display: block;
+    width: 100%;
+    background: var(--gradient);
+    color: white;
+    font-weight: 900;
+    font-size: 17px;
+    padding: 18px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,77,109,0.3);
+  }
+
+  .footer {
+    text-align: center;
+    padding: 32px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.8;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes blink {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="container">
+
+  <div class="header">
+    <div class="badge">SES業界調査員 × タイプ診断</div>
+    <h1 class="title">SES脱出<span>タイプ診断</span></h1>
+    <p class="subtitle">5つの質問で、あなたの転職タイプを診断<br>最適なエージェントを無料で紹介します</p>
+  </div>
+
+  <!-- Start -->
+  <div id="startScreen" class="start-screen">
+    <div class="start-card">
+      <div class="start-stats">
+        <div class="stat">
+          <div class="stat-num">5問</div>
+          <div class="stat-label">所要時間1分</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">4種</div>
+          <div class="stat-label">診断タイプ</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">無料</div>
+          <div class="stat-label">完全無料</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
+        SESエンジニアの転職タイプを診断。<br>
+        あなたの状況に最適なエージェントを紹介します。<br>
+        転職するかどうか決まっていなくてもOK。
+      </p>
+      <button class="start-btn" onclick="startDiagnosis()">🔥 今すぐ診断する（無料）</button>
+    </div>
+  </div>
+
+  <!-- Question -->
+  <div id="questionSection" style="display:none;">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="progressLabel">質問 1 / 5</span>
+        <span id="progressPct">20%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:20%"></div>
+      </div>
+    </div>
+    <div id="questionCard" class="question-card"></div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loadingSection">
+    <div class="loader-ring"></div>
+    <div class="loading-text">診断結果を分析中</div>
+    <div class="loading-sub">
+      あなたの回答をもとにタイプを判定しています
+      <div class="loading-dots"><span>.</span><span>.</span><span>.</span></div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result" id="resultSection">
+    <div class="result-header">
+      <div class="result-type-badge" id="resultBadge"></div>
+      <span class="result-emoji" id="resultEmoji"></span>
+      <div class="result-type" id="resultType"></div>
+      <div class="result-comment" id="resultComment"></div>
+    </div>
+
+    <div class="section-title">あなたにおすすめのエージェント</div>
+    <div id="agentList"></div>
+
+    <div class="notice">
+      ※ 登録・利用は完全無料です。転職するかどうか決まっていなくてもOK。<br>
+      まず情報収集として登録して損はありません。複数登録して比較するのがおすすめです。
+    </div>
+
+    <div class="share-section">
+      <div class="share-title">診断結果をシェアする 🔥</div>
+      <div class="share-sub">あなたのタイプをXでシェアしよう</div>
+      <button class="share-btn" onclick="shareResult()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        Xでシェアする
+      </button>
+    </div>
+
+    <button class="retry-btn" onclick="resetDiagnosis()">もう一度診断する</button>
+  </div>
+
+  <div class="footer">
+    SES業界調査員 | 転職情報を忖度なしで発信<br>
+    ※本診断は参考情報です。実際の転職活動はエージェントにご相談ください。
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    label: 'Q1',
+    text: '今のSES生活、ぶっちゃけどう？',
+    hint: '正直な気持ちを選んでください',
+    options: [
+      { emoji: '😫', text: 'もう限界。今すぐ抜け出したい', score: { urgency: 4 } },
+      { emoji: '😤', text: 'とにかく自社開発に行きたい', score: { urgency: 3 } },
+      { emoji: '🤔', text: '悪くないけど将来が不安', score: { urgency: 2 } },
+      { emoji: '😐', text: 'まあまあ。でも情報収集はしたい', score: { urgency: 1 } }
+    ]
+  },
+  {
+    label: 'Q2',
+    text: 'SES・IT経験は何年？',
+    hint: '経験年数を選んでください',
+    options: [
+      { emoji: '🌱', text: '1年未満', score: { experience: 1 } },
+      { emoji: '📚', text: '1〜3年', score: { experience: 2 } },
+      { emoji: '💪', text: '3〜5年', score: { experience: 3 } },
+      { emoji: '🏆', text: '5年以上', score: { experience: 4 } }
+    ]
+  },
+  {
+    label: 'Q3',
+    text: '自分のスキル、正直どう思う？',
+    hint: '客観的に評価してみてください',
+    options: [
+      { emoji: '💪', text: '自信あり。市場価値は高いと思う', score: { skill: 4 } },
+      { emoji: '📈', text: 'まあまあ。成長中', score: { skill: 3 } },
+      { emoji: '😅', text: '案件ガチャ次第で身についてない', score: { skill: 2 } },
+      { emoji: '🤷', text: '自分のスキルがよくわからない', score: { skill: 1 } }
+    ]
+  },
+  {
+    label: 'Q4',
+    text: '転職で一番叶えたいことは？',
+    hint: '最も重要なものを選んでください',
+    options: [
+      { emoji: '💰', text: '年収を上げたい（100万以上）', score: { goal: 'salary' } },
+      { emoji: '🏢', text: '自社開発企業に移りたい', score: { goal: 'jisha' } },
+      { emoji: '📚', text: 'スキルが身につく環境に行きたい', score: { goal: 'skill' } },
+      { emoji: '🌱', text: 'まずは情報収集・市場価値を知りたい', score: { goal: 'info' } }
+    ]
+  },
+  {
+    label: 'Q5',
+    text: '転職、いつ頃動きたい？',
+    hint: '今のリアルな気持ちで答えてください',
+    options: [
+      { emoji: '🔥', text: '今すぐ動きたい（〜1ヶ月以内）', score: { timing: 4 } },
+      { emoji: '📅', text: '3ヶ月以内には動く', score: { timing: 3 } },
+      { emoji: '🗓️', text: '半年以内に動きたい', score: { timing: 2 } },
+      { emoji: '🔍', text: 'まず情報収集から始める', score: { timing: 1 } }
+    ]
+  }
+];
+
+const typeDefinitions = {
+  A: {
+    badge: 'タイプA',
+    emoji: '🔥',
+    typeLine1: '今すぐ脱出できる',
+    typeLine2: '逸材タイプ',
+    comments: {
+      salary: '経験・スキルが揃っているあなたは、今が最も動きやすいタイミングです。年収100万アップも十分狙えます。まずはエージェントに登録して、市場の求人を確認してみましょう。動き始めた人だけが次のキャリアを手に入れられます。',
+      jisha: '自社開発への転職を強く希望するあなたは、今すぐ動くべきタイミングです。経験年数・スキルが揃っており、自社開発求人に強いエージェントを使えば、理想の環境に移れる可能性が高いです。',
+      skill: 'スキルアップを求めるあなたの市場価値は、思っているより高い可能性があります。今のタイミングで動けば、技術が身につく自社開発企業に転職できる可能性が高いです。エージェントに相談してみましょう。',
+      info: '情報収集から始めたいあなたも、まずエージェントに登録するのが最短です。登録するだけで自分の市場価値がわかります。転職するかどうかは後から決めてOKです。'
+    },
+    agents: ['levatech', 'geekly'],
+    shareText: '今すぐ脱出できる逸材タイプ🔥'
+  },
+  B: {
+    badge: 'タイプB',
+    emoji: '💪',
+    typeLine1: 'あと一歩で脱出できる',
+    typeLine2: '準備完了タイプ',
+    comments: {
+      salary: '転職意欲が高く、あと少し準備すれば年収アップが狙えます。エージェントに登録して求人を見るだけでも、市場の相場感がつかめます。動き始めるタイミングとして今が最適です。',
+      jisha: '自社開発への転職はもう少しで実現できます。エージェントに登録して、現状のスキルで狙える求人を確認してみましょう。思っているより選択肢が多いはずです。',
+      skill: 'スキルアップを目指すあなたは、転職によってより良い環境に移れる可能性があります。エージェントに相談すれば、あなたのスキルを正確に評価してもらえます。',
+      info: '情報収集を始めるなら今がベストタイミングです。エージェントに登録するだけで、市場の求人・年収相場・自分の市場価値がわかります。完全無料なのでまず登録してみましょう。'
+    },
+    agents: ['levatech', 'mynavi'],
+    shareText: 'あと一歩で脱出できる準備完了タイプ💪'
+  },
+  C: {
+    badge: 'タイプC',
+    emoji: '📚',
+    typeLine1: '着実に準備中',
+    typeLine2: '脱出予備軍タイプ',
+    comments: {
+      salary: '年収アップを目指す方向性は正しいです。今すぐ転職しなくても、エージェントに登録して市場の相場を知っておくだけで動きやすくなります。情報収集を始めるなら今です。',
+      jisha: '自社開発への転職を目指しているあなた。今のうちにエージェントに登録して、どんな求人があるか把握しておきましょう。準備ができたときに素早く動けます。',
+      skill: 'スキルアップを重視するあなたには、どんな企業が求めているスキルを伸ばせるか、エージェントに相談してみることをおすすめします。無料で情報収集できます。',
+      info: '情報収集から始めるあなたの判断は正しいです。エージェントへの登録は無料で、求人・年収相場・自分の市場価値を一気に知れます。まず登録してみましょう。'
+    },
+    agents: ['mynavi', 'onecareer'],
+    shareText: '着実に準備中の脱出予備軍タイプ📚'
+  },
+  D: {
+    badge: 'タイプD',
+    emoji: '🌱',
+    typeLine1: 'まず情報収集から',
+    typeLine2: '賢い動き方タイプ',
+    comments: {
+      salary: '今すぐ転職しなくても、自分の市場価値を知ることから始めましょう。エージェントへの登録は無料で、求人情報を見るだけでも年収の相場感がつかめます。焦らず情報収集から始めるのが賢い選択です。',
+      jisha: '自社開発への転職を漠然と考えているあなた。まずエージェントに登録して、求人を眺めてみましょう。具体的なイメージができると、やるべきことが見えてきます。',
+      skill: 'スキルアップを意識しているあなた。今の自分のスキルが市場でどう評価されるか、エージェントに聞いてみるのが最初のステップです。無料で相談できます。',
+      info: '情報収集から始めるのは賢い判断です。ワンキャリア転職では転職者のリアルな体験談・年収データが見れます。まず情報を集めて、自分のキャリアをじっくり考えてみましょう。'
+    },
+    agents: ['onecareer', 'mynavi'],
+    shareText: 'まず情報収集から始める賢い動き方タイプ🌱'
+  }
+};
+
+const agentData = {
+  levatech: {
+    rank: '1位',
+    name: 'レバテックキャリア',
+    desc: 'エンジニア特化No.1。自社開発求人が豊富で年収交渉が強い。SES脱出実績多数。',
+    tags: ['エンジニア特化', '自社開発求人多数', '年収交渉強い'],
+    url: 'https://levatech-career.com/',  // ← アフィリリンクに変更
+    primary: true
+  },
+  geekly: {
+    rank: '2位',
+    name: 'Geekly（ギークリー）',
+    desc: 'IT・Web専門エージェント。QA・テスト職の転職実績が多く、SES脱出に強い。',
+    tags: ['IT・Web特化', 'QA職に強い', 'SES脱出実績'],
+    url: 'https://www.geekly.co.jp/',  // ← アフィリリンクに変更
+    primary: true
+  },
+  mynavi: {
+    rank: '3位',
+    name: 'マイナビITエージェント',
+    desc: '大手の安心感。IT求人数が多く、登録するだけで求人情報が届く。情報収集に最適。',
+    tags: ['大手の安心感', 'IT求人多数', '登録だけでOK'],
+    url: 'https://mynavi-agent.jp/it/',  // ← アフィリリンクに変更
+    primary: false
+  },
+  onecareer: {
+    rank: '参考',
+    name: 'ワンキャリア転職',
+    desc: '転職者のリアルな体験談・年収データが見れる転職サイト。情報収集に役立つ。',
+    tags: ['転職体験談多数', '年収データ豊富', '情報収集向け'],
+    url: 'https://plus.onecareer.jp/',  // ← アフィリリンクに変更
+    primary: false
+  }
+};
+
+let currentQuestion = 0;
+let answers = [];
+let scores = { urgency: 0, experience: 0, skill: 0, timing: 0, goal: 'info' };
+let currentType = '';
+
+function startDiagnosis() {
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('questionSection').style.display = 'block';
+  showQuestion(0);
+}
+
+function showQuestion(index) {
+  const q = questions[index];
+  const pct = ((index + 1) / questions.length * 100).toFixed(0);
+
+  document.getElementById('progressLabel').textContent = `質問 ${index + 1} / ${questions.length}`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+
+  const card = document.getElementById('questionCard');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'fadeUp 0.4s ease';
+
+  card.innerHTML = `
+    <div class="q-label">${q.label}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-hint">${q.hint}</div>
+    <div class="options">
+      ${q.options.map((opt, i) => `
+        <button class="option" onclick="selectOption(${index}, ${i})">
+          <span class="option-emoji">${opt.emoji}</span>
+          <span class="option-text">${opt.text}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function selectOption(questionIndex, optionIndex) {
+  const selected = questions[questionIndex].options[optionIndex];
+
+  // スコア加算
+  const s = selected.score;
+  if (s.urgency) scores.urgency = s.urgency;
+  if (s.experience) scores.experience = s.experience;
+  if (s.skill) scores.skill = s.skill;
+  if (s.timing) scores.timing = s.timing;
+  if (s.goal) scores.goal = s.goal;
+
+  answers[questionIndex] = optionIndex;
+
+  const options = document.querySelectorAll('.option');
+  options.forEach(o => o.classList.remove('selected'));
+  options[optionIndex].classList.add('selected');
+
+  setTimeout(() => {
+    if (questionIndex < questions.length - 1) {
+      currentQuestion = questionIndex + 1;
+      showQuestion(currentQuestion);
+    } else {
+      showLoading();
+    }
+  }, 350);
+}
+
+function determineType() {
+  const total = scores.urgency + scores.experience + scores.skill + scores.timing;
+  const max = 16;
+  const ratio = total / max;
+
+  if (ratio >= 0.75) return 'A';
+  if (ratio >= 0.55) return 'B';
+  if (ratio >= 0.35) return 'C';
+  return 'D';
+}
+
+function showLoading() {
+  document.getElementById('questionSection').style.display = 'none';
+  document.getElementById('loadingSection').classList.add('active');
+
+  setTimeout(() => {
+    const type = determineType();
+    currentType = type;
+    showResult(type);
+  }, 2000);
+}
+
+function showResult(type) {
+  document.getElementById('loadingSection').classList.remove('active');
+
+  const data = typeDefinitions[type];
+  const goal = scores.goal;
+
+  document.getElementById('resultBadge').textContent = data.badge;
+  document.getElementById('resultEmoji').textContent = data.emoji;
+  document.getElementById('resultType').innerHTML =
+    `${data.typeLine1}<br><span class="highlight">${data.typeLine2}</span>`;
+  document.getElementById('resultComment').textContent = data.comments[goal] || data.comments['info'];
+
+  const agentList = document.getElementById('agentList');
+  agentList.innerHTML = data.agents.map(key => {
+    const agent = agentData[key];
+    return `
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-rank">${agent.rank}</div>
+          <div class="agent-name">${agent.name}</div>
+        </div>
+        <div class="agent-desc">${agent.desc}</div>
+        <div class="agent-tags">
+          ${agent.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+        <a href="${agent.url}" target="_blank" rel="noopener" class="agent-btn ${agent.primary ? '' : 'secondary'}">
+          ${agent.primary ? '✅ 無料で登録する（PR）' : '🔍 詳細を見る（PR）'}
+        </a>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('resultSection').classList.add('active');
+
+  setTimeout(() => {
+    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function shareResult() {
+  const data = typeDefinitions[currentType];
+  const text = encodeURIComponent(
+    `SES脱出診断やってみた！\n\n私は「${data.shareText}」でした🎯\n\nSESエンジニアの人はぜひ試してみて👇\n#SES脱出 #エンジニア転職 #転職`
+  );
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+}
+
+function resetDiagnosis() {
+  currentQuestion = 0;
+  answers = [];
+  scores = { urgency: 0, experience: 0, skill: 0, timing: 0, goal: 'info' };
+  currentType = '';
+
+  document.getElementById('resultSection').classList.remove('active');
+  document.getElementById('startScreen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
