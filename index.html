@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZ70L70J06"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WZ70L70J06');
+  function trackEvent(name, params){ try{ gtag('event', name, params||{}); }catch(e){} }
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>脱SESタイプ診断 | 脱SES診断ラボ</title>
@@ -540,7 +549,7 @@
       <div class="start-stats">
         <div class="stat">
           <div class="stat-num">5問</div>
-          <div class="stat-label">所要時間1分</div>
+          <div class="stat-label">所要時間30秒</div>
         </div>
         <div class="stat">
           <div class="stat-num">4種</div>
@@ -597,11 +606,11 @@
     <div style="background:linear-gradient(135deg,#1a1a26,#12121a);border:1.5px solid var(--accent2);border-radius:14px;padding:18px;margin:18px 0;text-align:center;">
       <div style="font-weight:700;font-size:15px;color:var(--accent2);margin-bottom:6px;">▶ まずは経験を整理する（おすすめ）</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">職務経歴書に書ける「強み・足りない経験・次の一手」を10の質問で整理できます（無料）</div>
-      <a href="./shokumukeireki-tool.html" style="display:inline-block;background:linear-gradient(135deg,#4dffb4,#2c8c8c);color:#0a0a0f;text-decoration:none;font-weight:700;font-size:15px;padding:13px 26px;border-radius:10px;">職務経歴書・装備整理ツールへ →</a>
+      <a href="./shokumukeireki-tool.html" onclick="trackEvent('tool_click',{from:'5q_result'})" style="display:inline-block;background:linear-gradient(135deg,#4dffb4,#2c8c8c);color:#0a0a0f;text-decoration:none;font-weight:700;font-size:15px;padding:13px 26px;border-radius:10px;">職務経歴書・装備整理ツールへ →</a>
     </div>
 
     <div style="text-align:center;margin:14px 0 8px;">
-      <a href="./tanaoroshi-sheet.html" style="display:inline-block;color:var(--accent3);text-decoration:none;font-size:13px;border:1px solid var(--border);border-radius:8px;padding:9px 16px;">&#128229; 無料の職務経歴書 棚卸しシートを見る</a>
+      <a href="./tanaoroshi-sheet.html" onclick="trackEvent('free_template_click',{from:'5q_result'})" style="display:inline-block;color:var(--accent3);text-decoration:none;font-size:13px;border:1px solid var(--border);border-radius:8px;padding:9px 16px;">&#128229; 無料の職務経歴書 棚卸しシートを見る</a>
     </div>
 
     <div class="section-title" style="font-size:14px;color:var(--muted);">市場価値を確認したい方は（選択肢）</div>
@@ -801,6 +810,7 @@ let scores = { urgency: 0, experience: 0, skill: 0, timing: 0, goal: 'info' };
 let currentType = '';
 
 function startDiagnosis() {
+  trackEvent('diagnosis_start', { tool: '5q_entry' });
   document.getElementById('startScreen').style.display = 'none';
   document.getElementById('questionSection').style.display = 'block';
   showQuestion(0);
@@ -885,6 +895,7 @@ function showLoading() {
 
 function showResult(type) {
   document.getElementById('loadingSection').classList.remove('active');
+  trackEvent('diagnosis_complete', { tool: '5q_entry', result_type: type });
 
   const data = typeDefinitions[type];
   const goal = scores.goal;
@@ -916,7 +927,7 @@ function showResult(type) {
         <div class="agent-tags">
           ${agent.tags.map(t => `<span class="tag">${t}</span>`).join('')}
         </div>
-        <a href="${agent.url}" target="_blank" rel="noopener" class="agent-btn ${agent.primary ? '' : 'secondary'}">
+        <a href="${agent.url}" target="_blank" rel="noopener" class="agent-btn ${agent.primary ? '' : 'secondary'}" onclick="trackEvent('agent_click',{agent:'${key}',from:'5q_result',result_type:'${type}'})">
           ${agent.primary ? '✅ 無料で登録する（PR）' : '🔍 詳細を見る（PR）'}
         </a>
       </div>
@@ -931,6 +942,7 @@ function showResult(type) {
 }
 
 function shareResult() {
+  trackEvent('share_click', { from: '5q_result' });
   const data = typeDefinitions[currentType];
   const text = encodeURIComponent(
     `SES脱出診断やってみた！\n\n私は「${data.shareText}」でした🎯\n\nSESエンジニアの人はぜひ試してみて👇\n#SES脱出 #エンジニア転職 #転職`
