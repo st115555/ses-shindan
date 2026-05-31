@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZ70L70J06"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-WZ70L70J06');
+  function trackEvent(name, params){ try{ gtag('event', name, params||{}); }catch(e){} }
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SES職務経歴書・装備整理ツール | 脱SES診断ラボ</title>
@@ -510,6 +519,7 @@ let cur = 0;
 const answers = []; // 各設問の選択index（multiは配列）
 
 function start() {
+  trackEvent('diagnosis_start', { tool: '10q_main' });
   cur = 0;
   answers.length = 0;
   show("quiz");
@@ -612,6 +622,7 @@ function stars(n, max) {
 }
 
 function renderResult(type, sc) {
+  trackEvent('diagnosis_complete', { tool: '10q_main', result_type: type });
   const T = TYPES[type];
   document.getElementById("rEmblem").textContent = type;
   document.getElementById("rName").textContent = T.name;
@@ -670,9 +681,9 @@ function renderResult(type, sc) {
 }
 
 function buildCTA(type) {
-  const free = `<a class="btn gold" href="${LINKS.freeTemplate}">&#128229; 無料の職務経歴書 棚卸しシートを受け取る</a>`;
-  const techgo = `<a class="btn" href="${LINKS.techgo}" target="_blank" rel="noopener nofollow">&#128269; 市場価値を確認する（IT特化）<br><span class="pr-tag">経験者向け・PR</span></a>`;
-  const onecareer = `<a class="btn" href="${LINKS.onecareer}" target="_blank" rel="noopener nofollow">&#128270; 求人の選択肢を広く見る<br><span class="pr-tag">情報収集向け・PR</span></a>`;
+  const free = `<a class="btn gold" href="${LINKS.freeTemplate}" onclick="trackEvent('free_template_click',{from:'10q_result',result_type:'${type}'})">&#128229; 無料の職務経歴書 棚卸しシートを受け取る</a>`;
+  const techgo = `<a class="btn" href="${LINKS.techgo}" target="_blank" rel="noopener nofollow" onclick="trackEvent('agent_click',{agent:'techgo',from:'10q_result',result_type:'${type}'})">&#128269; 市場価値を確認する（IT特化）<br><span class="pr-tag">経験者向け・PR</span></a>`;
+  const onecareer = `<a class="btn" href="${LINKS.onecareer}" target="_blank" rel="noopener nofollow" onclick="trackEvent('agent_click',{agent:'onecareer',from:'10q_result',result_type:'${type}'})">&#128270; 求人の選択肢を広く見る<br><span class="pr-tag">情報収集向け・PR</span></a>`;
 
   let html = `<div class="cta-label">&#9876; 次のクエスト</div>`;
   if (type === "A") {
@@ -689,6 +700,7 @@ function buildCTA(type) {
 }
 
 function share() {
+  trackEvent('share_click', { from: '10q_result' });
   const name = document.getElementById("rName").textContent;
   const text = `脱SES診断ラボで装備（経験）を整理してみた。\n結果は「${name}」。\n職務経歴書に書ける形で経験を整理するのが大事らしい。\n#脱SES診断ラボ`;
   const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
