@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SES職務経歴書・装備整理ツール | 脱SES診断ラボ</title>
+<meta name="description" content="SES・客先常駐の経験を、職務経歴書に書ける『装備』として整理。テスト・保守中心でも、伝え方で評価が変わります。登録不要・無料・3分。">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b3e;
+    --navy2: #14264f;
+    --navy3: #1c3666;
+    --panel: #fbf8f0;
+    --panel2: #f3eddd;
+    --ink: #1a2333;
+    --muted: #5a6276;
+    --gold: #c9a14a;
+    --gold2: #e6c878;
+    --teal: #2c8c8c;
+    --teal2: #3fb3a8;
+    --red: #b3433a;
+    --line: #d8cfb8;
+    --shadow: 0 8px 24px rgba(13,27,62,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--navy);
+    color: var(--ink);
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.7;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 600px; margin: 0 auto; min-height: 100vh; background: var(--navy); }
+
+  /* ===== Header ===== */
+  .topbar {
+    background: linear-gradient(180deg, #0d1b3e, #14264f);
+    border-bottom: 2px solid var(--gold);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .crest {
+    width: 38px; height: 42px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--navy3), var(--navy2));
+    border: 1.5px solid var(--gold);
+    border-radius: 6px 6px 50% 50%/6px 6px 18px 18px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold2); font-size: 20px;
+  }
+  .brand { color: #fff; }
+  .brand .name { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 18px; letter-spacing: .5px; }
+  .brand .sub { color: var(--gold2); font-size: 11px; letter-spacing: .5px; }
+
+  .statusbar {
+    background: var(--navy2);
+    border-bottom: 1px solid var(--navy3);
+    display: flex; justify-content: space-around;
+    padding: 8px 6px; color: #cfd6e6; font-size: 12px;
+  }
+  .statusbar b { color: var(--gold2); font-weight: 700; }
+
+  /* ===== Sections ===== */
+  .screen { display: none; padding: 22px 16px 60px; }
+  .screen.active { display: block; }
+
+  /* ===== Intro ===== */
+  .hero {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .hero .compass {
+    width: 56px; height: 56px; margin: 0 auto 14px;
+    border: 2px solid var(--gold); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--navy); font-size: 26px; background: var(--panel2);
+  }
+  .hero h1 {
+    font-family: 'Noto Serif JP', serif; font-size: 22px; font-weight: 900;
+    color: var(--navy); line-height: 1.4; margin-bottom: 12px;
+  }
+  .hero p { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 16px 0 4px; }
+  .badge {
+    background: var(--panel2); border: 1px solid var(--line); color: var(--navy);
+    font-size: 12px; padding: 5px 12px; border-radius: 20px; font-weight: 700;
+  }
+
+  .btn {
+    display: block; width: 100%; border: none; cursor: pointer;
+    font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 17px;
+    color: #fff; background: linear-gradient(135deg, var(--navy3), var(--navy2));
+    border: 1.5px solid var(--gold); border-radius: 12px;
+    padding: 16px; margin-top: 20px; letter-spacing: 1px;
+    box-shadow: 0 4px 14px rgba(13,27,62,.3);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn .arrow { color: var(--gold2); margin-left: 6px; }
+  .btn.gold { background: linear-gradient(135deg, var(--gold), #b8923f); border-color: var(--gold2); color: #2a200a; }
+  .btn.ghost { background: transparent; color: var(--navy); border:1.5px solid var(--line); box-shadow:none; }
+
+  .note { font-size: 11px; color: var(--muted); margin-top: 14px; line-height: 1.6; }
+
+  /* ===== Question ===== */
+  .progress-wrap { margin-bottom: 18px; }
+  .progress-label { color: var(--gold2); font-size: 13px; font-family: 'Noto Serif JP', serif; text-align: center; margin-bottom: 8px; }
+  .progress-track { height: 8px; background: var(--navy2); border-radius: 6px; overflow: hidden; border: 1px solid var(--navy3); }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal2)); width: 0%; transition: width .3s; }
+
+  .qcard {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 18px; box-shadow: var(--shadow);
+  }
+  .qnum {
+    display: inline-block; background: var(--navy); color: var(--gold2);
+    font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 13px;
+    padding: 3px 12px; border-radius: 6px; margin-bottom: 12px;
+  }
+  .qtext { font-family: 'Noto Serif JP', serif; font-size: 19px; font-weight: 700; color: var(--navy); line-height: 1.45; margin-bottom: 6px; }
+  .qhint { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    background: #fff; border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 13px 15px; cursor: pointer; font-size: 15px; color: var(--ink);
+    display: flex; align-items: center; gap: 11px; text-align: left;
+    transition: border-color .12s, background .12s;
+  }
+  .opt:active { background: var(--panel2); }
+  .opt.selected { border-color: var(--teal); background: #eaf6f4; }
+  .opt .check {
+    width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%;
+    border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #fff;
+  }
+  .opt.selected .check { background: var(--teal); border-color: var(--teal); }
+  .multi-hint { font-size: 11px; color: var(--teal); margin-bottom: 10px; font-weight: 700; }
+
+  .qnav { display: flex; gap: 10px; margin-top: 18px; }
+  .qnav .btn { margin-top: 0; }
+  .qnav .back { flex: 0 0 90px; }
+
+  /* ===== Result ===== */
+  .result-hero {
+    background: linear-gradient(180deg, var(--navy2), var(--navy)); 
+    border: 1.5px solid var(--gold); border-radius: 14px;
+    padding: 24px 18px; text-align: center; color: #fff; box-shadow: var(--shadow);
+  }
+  .type-emblem {
+    width: 70px; height: 78px; margin: 0 auto 12px;
+    background: linear-gradient(135deg, var(--gold), #a07c2e);
+    border-radius: 8px 8px 50% 50%/8px 8px 22px 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif JP', serif; font-size: 34px; font-weight: 900; color: #2a200a;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  }
+  .type-name { font-family: 'Noto Serif JP', serif; font-size: 22px; font-weight: 900; color: var(--gold2); margin-bottom: 6px; }
+  .type-cap { font-size: 13px; color: #cfd6e6; }
+
+  .stats { background: var(--navy2); border-radius: 10px; padding: 14px 16px; margin-top: 16px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+  .stat-label { font-size: 13px; color: #cfd6e6; }
+  .stars { letter-spacing: 2px; font-size: 15px; }
+  .star-on { color: var(--gold2); }
+  .star-off { color: #38476b; }
+
+  .block {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 16px; margin-top: 14px; box-shadow: var(--shadow);
+  }
+  .block h3 {
+    font-family: 'Noto Serif JP', serif; font-size: 16px; color: var(--navy);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .block h3 .ic { color: var(--gold); }
+  .block p { font-size: 14px; color: var(--ink); }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 7px; }
+  .tag {
+    background: var(--panel2); border: 1px solid var(--line); color: var(--navy);
+    font-size: 12.5px; padding: 5px 11px; border-radius: 7px; font-weight: 500;
+  }
+  .tag.lack { background: #fbeeec; border-color: #e6c4bf; color: var(--red); }
+  .material-list { list-style: none; }
+  .material-list li {
+    font-size: 13.5px; color: var(--ink); padding: 7px 0 7px 22px; position: relative;
+    border-bottom: 1px dashed var(--line);
+  }
+  .material-list li:last-child { border-bottom: none; }
+  .material-list li::before { content: "▸"; color: var(--teal); position: absolute; left: 4px; }
+
+  .cta-block { margin-top: 16px; }
+  .cta-label {
+    font-family:'Noto Serif JP',serif; color: var(--gold2); font-size: 13px;
+    text-align: center; margin-bottom: 10px; letter-spacing: 1px;
+  }
+  .pr-tag { font-size: 10px; color: var(--gold2); opacity: .85; font-weight:700; letter-spacing:1px; }
+
+  .share {
+    margin-top: 16px; background: var(--navy2); border: 1px solid var(--navy3);
+    border-radius: 12px; padding: 16px; text-align: center;
+  }
+  .share p { color: #cfd6e6; font-size: 13px; margin-bottom: 10px; }
+  .share .btn { background: #1a1f29; border-color:#38476b; margin-top:0; }
+
+  .disclaimer {
+    margin-top: 22px; font-size: 11px; color: #8a93a8; line-height: 1.7;
+    border-top: 1px solid var(--navy3); padding-top: 16px;
+  }
+  .footer-links { text-align: center; margin-top: 14px; font-size: 11px; color:#8a93a8; }
+  .footer-links a { color: var(--gold2); text-decoration: none; }
+
+  .restart { text-align:center; margin-top:18px; }
+  .restart button { background:none; border:none; color:var(--gold2); font-size:13px; cursor:pointer; text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="crest">&#9876;</div>
+    <div class="brand">
+      <div class="name">脱SES診断ラボ</div>
+      <div class="sub">職務経歴書・装備整理ツール</div>
+    </div>
+  </div>
+  <div class="statusbar">
+    <span>&#128737; 整理する装備 <b>あなたの経験</b></span>
+    <span>&#9201; 所要 <b>約3分</b></span>
+  </div>
+
+  <!-- ===== INTRO ===== -->
+  <section class="screen active" id="intro">
+    <div class="hero">
+      <div class="compass">&#129517;</div>
+      <h1>今の経験を、職務経歴書に書ける<br>「装備」として整理する</h1>
+      <p>テスト・保守・運用が中心でも、<br>伝え方しだいで評価は変わります。</p>
+      <p>10の質問に答えるだけで、あなたの<strong>強み・足りない経験・次にやること</strong>が見えてきます。</p>
+      <div class="badges">
+        <span class="badge">登録不要</span>
+        <span class="badge">無料</span>
+        <span class="badge">約3分</span>
+      </div>
+      <button class="btn" onclick="start()">装備を整理する<span class="arrow">&#10142;</span></button>
+      <p class="note">個人名・会社名・案件名の入力は不要です。<br>入力内容をサーバーに保存する機能はありません。</p>
+    </div>
+    <div class="footer-links">&copy; 脱SES診断ラボ</div>
+  </section>
+
+  <!-- ===== QUESTIONS ===== -->
+  <section class="screen" id="quiz">
+    <div class="progress-wrap">
+      <div class="progress-label" id="pLabel">質問 1 / 10</div>
+      <div class="progress-track"><div class="progress-fill" id="pFill"></div></div>
+    </div>
+    <div class="qcard">
+      <span class="qnum" id="qNum">Q.1</span>
+      <div class="qtext" id="qText"></div>
+      <div class="qhint" id="qHint"></div>
+      <div class="multi-hint" id="multiHint" style="display:none;">&#9776; あてはまるものを複数選べます</div>
+      <div class="opts" id="opts"></div>
+      <div class="qnav">
+        <button class="btn ghost back" id="backBtn" onclick="back()" style="display:none;">戻る</button>
+        <button class="btn" id="nextBtn" onclick="next()" disabled>次へ<span class="arrow">&#10142;</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESULT ===== -->
+  <section class="screen" id="result">
+    <div class="result-hero">
+      <div class="type-emblem" id="rEmblem">B</div>
+      <div class="type-name" id="rName">言語化強化タイプ</div>
+      <div class="type-cap" id="rCap"></div>
+      <div style="font-size:11px;color:#9aa3ba;margin-top:8px;">※この結果は入力内容にもとづく目安です</div>
+      <div class="stats" id="rStats"></div>
+    </div>
+
+    <div class="block">
+      <h3><span class="ic">&#128220;</span> いまの状態</h3>
+      <p id="rState"></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="ic">&#9876;</span> あなたの武器（職務経歴書に書ける強み）</h3>
+      <div class="tag-list" id="rStrength"></div>
+    </div>
+
+    <div class="block">
+      <h3><span class="ic">&#128302;</span> 足りない装備（補強すると評価が上がる）</h3>
+      <div class="tag-list" id="rLack"></div>
+    </div>
+
+    <div class="block">
+      <h3><span class="ic">&#128221;</span> 職務経歴書に書けそうな材料</h3>
+      <ul class="material-list" id="rMaterial"></ul>
+    </div>
+
+    <div class="block">
+      <h3><span class="ic">&#10146;</span> 次にやるべきこと</h3>
+      <p id="rNext"></p>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-block" id="ctaArea"></div>
+
+    <!-- Share -->
+    <div class="share">
+      <p>診断結果をシェアする</p>
+      <button class="btn" onclick="share()">&#120143; でシェアする</button>
+    </div>
+
+    <div class="restart"><button onclick="restart()">&#8635; もう一度整理する</button></div>
+
+    <div class="disclaimer" id="disc">
+      本ツールは、職務経歴書作成前の経験整理を目的とした簡易ツールです。転職成功・年収アップ・内定獲得を保証するものではありません。個人名・会社名・機密情報は入力しないでください。
+    </div>
+    <div class="footer-links">
+      <a href="#" onclick="return false;">運営について</a> ｜ <a href="#" onclick="return false;">プライバシーポリシー</a><br>
+      &copy; 脱SES診断ラボ
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   設問定義  type: single | multi
+   各選択肢は score(各スコア軸への加点) を持つ
+   スコア軸: jitsumu(実務) sekkei(設計上流) buki(書類武器度)
+            junbi(脱SES準備度) risk(言語化リスク)
+   ============================================================ */
+const QUESTIONS = [
+  {
+    q: "いまの働き方に一番近いのは？",
+    hint: "現在のメインの就業形態を選んでください",
+    type: "single",
+    opts: [
+      { t: "SES・客先常駐", s: { junbi: 1 } },
+      { t: "受託開発", s: { jitsumu: 1 } },
+      { t: "自社開発", s: { jitsumu: 2, sekkei: 1 } },
+      { t: "社内SE", s: { jitsumu: 1 } },
+      { t: "インフラ運用・その他", s: {} },
+    ],
+  },
+  {
+    q: "エンジニアとしての経験年数は？",
+    hint: "おおよそで構いません",
+    type: "single",
+    opts: [
+      { t: "1年未満", s: { jitsumu: 0 } },
+      { t: "1〜2年", s: { jitsumu: 1 } },
+      { t: "3〜5年", s: { jitsumu: 2, junbi: 1 } },
+      { t: "5年以上", s: { jitsumu: 3, junbi: 1 } },
+    ],
+  },
+  {
+    q: "主に担当してきた工程は？",
+    hint: "これまで関わった工程",
+    type: "multi",
+    opts: [
+      { t: "テスト", s: { jitsumu: 1 } },
+      { t: "保守・運用", s: { jitsumu: 1 } },
+      { t: "軽微な改修", s: { jitsumu: 1 } },
+      { t: "実装（コーディング）", s: { jitsumu: 2 } },
+      { t: "詳細設計", s: { sekkei: 1 } },
+      { t: "基本設計", s: { sekkei: 2 } },
+      { t: "要件定義", s: { sekkei: 2 } },
+      { t: "顧客折衝", s: { sekkei: 1 } },
+      { t: "リーダー業務", s: { sekkei: 1, buki: 1 } },
+    ],
+  },
+  {
+    q: "扱える技術は？",
+    hint: "業務で使ったことのあるもの",
+    type: "multi",
+    opts: [
+      { t: "Java", s: { jitsumu: 1 } },
+      { t: "JavaScript / TypeScript", s: { jitsumu: 1 } },
+      { t: "React / Vue", s: { jitsumu: 1 } },
+      { t: "PHP / Python", s: { jitsumu: 1 } },
+      { t: "SQL", s: { jitsumu: 1 } },
+      { t: "AWS / クラウド", s: { jitsumu: 1, sekkei: 1 } },
+      { t: "Linux", s: { jitsumu: 1 } },
+      { t: "Git", s: { jitsumu: 1 } },
+      { t: "Excel / VBA", s: {} },
+    ],
+  },
+  {
+    q: "実装（コーディング）はどのくらいできる？",
+    hint: "一番近いものを1つ",
+    type: "single",
+    opts: [
+      { t: "ほぼ経験がない", s: { risk: 2 } },
+      { t: "一部の改修ならできる", s: { jitsumu: 1, risk: 1 } },
+      { t: "詳細設計に沿って実装できる", s: { jitsumu: 2 } },
+      { t: "仕様を見れば自走できる", s: { jitsumu: 3, buki: 1 } },
+      { t: "設計から実装まで担当できる", s: { jitsumu: 3, sekkei: 1, buki: 1 } },
+    ],
+  },
+  {
+    q: "設計の経験は？",
+    hint: "一番近いものを1つ",
+    type: "single",
+    opts: [
+      { t: "なし", s: { risk: 1 } },
+      { t: "詳細設計の一部を手伝った", s: { sekkei: 1 } },
+      { t: "詳細設計を担当した", s: { sekkei: 2 } },
+      { t: "基本設計を一部担当した", s: { sekkei: 3 } },
+      { t: "基本設計以上を担当した", s: { sekkei: 4, buki: 1 } },
+    ],
+  },
+  {
+    q: "成果や改善の経験は？",
+    hint: "業務での成果・改善",
+    type: "single",
+    opts: [
+      { t: "明確にある", s: { buki: 3 } },
+      { t: "少しある", s: { buki: 1 } },
+      { t: "ない", s: { risk: 2 } },
+      { t: "あるか分からない", s: { risk: 2 } },
+    ],
+  },
+  {
+    q: "現場で工夫・貢献したことは？",
+    hint: "職種は問いません。あてはまるものを複数選べます",
+    type: "multi",
+    opts: [
+      { t: "テスト観点を整理・改善した", s: { buki: 1 } },
+      { t: "不具合の原因を分析した", s: { buki: 1 } },
+      { t: "処理を改善・リファクタした", s: { buki: 1 } },
+      { t: "再利用しやすい形に整理した", s: { buki: 1 } },
+      { t: "設計や仕様の判断基準を整理した", s: { buki: 1, sekkei: 1 } },
+      { t: "要件の曖昧さを明確にした", s: { buki: 1, sekkei: 1 } },
+      { t: "障害対応の手順を整備した", s: { buki: 1 } },
+      { t: "運用を自動化・効率化した", s: { buki: 1 } },
+      { t: "手順書・ドキュメントを作った", s: { buki: 1 } },
+      { t: "チームに知見を共有した", s: { buki: 1 } },
+      { t: "開発担当や顧客とうまく連携した", s: { buki: 1 } },
+      { t: "特にない / 思いつかない", s: { risk: 1 } },
+    ],
+  },
+  {
+    q: "職務経歴書で一番不安なことは？",
+    hint: "一番近いものを1つ",
+    type: "single",
+    opts: [
+      { t: "書けることが少ない", s: { risk: 2 } },
+      { t: "何を強みにすればいいか分からない", s: { risk: 2 } },
+      { t: "成果を数字で書けない", s: { risk: 1 } },
+      { t: "テスト・保守ばかりで不安", s: { risk: 1 } },
+      { t: "自己PRが書けない", s: { risk: 2 } },
+      { t: "特に不安はない", s: { buki: 1 } },
+    ],
+  },
+  {
+    q: "転職への気持ちは？",
+    hint: "今の温度感に一番近いものを1つ",
+    type: "single",
+    opts: [
+      { t: "すぐにでも動きたい", s: { junbi: 3 } },
+      { t: "半年以内に考えたい", s: { junbi: 2 } },
+      { t: "まず情報収集したい", s: { junbi: 1 } },
+      { t: "まだ迷っている", s: { junbi: 0 } },
+    ],
+  },
+];
+
+/* ===== 結果タイプ定義 ===== */
+const TYPES = {
+  A: {
+    name: "実践装備タイプ",
+    cap: "職務経歴書に書ける材料が比較的そろっている冒険者",
+    state: "実務経験・実装経験・成果がそろっており、職務経歴書に書ける材料が比較的整っています。あとは「担当工程」「使用技術」「成果」を具体的に言語化すれば、市場で評価されやすい状態です。",
+    next: "材料はそろっているので、まずは自分の経験が市場でどう評価されるかを確認するフェーズです。職務経歴書のテンプレで整理しつつ、IT特化の転職サービスで市場価値を見てみるのがおすすめです。すぐ転職する必要はありません。",
+  },
+  B: {
+    name: "言語化強化タイプ",
+    cap: "経験はあるが、伝え方の整理が次の課題になる冒険者",
+    state: "実務経験はありますが、「何を担当したか」「どんな工夫をしたか」「どんな成果があったか」が整理できていないと、職務経歴書では実際より弱く見えてしまう可能性があります。経験の棚卸しと言語化が、いちばん効果の出るポイントです。",
+    next: "まずは経験を棚卸しして、職務経歴書に書ける形に言語化することが最優先です。無料の棚卸しシートで材料を洗い出し、言い換えテンプレで「伝わる表現」に整えると、同じ経験でも評価が変わってきます。",
+  },
+  C: {
+    name: "経験値・準備タイプ",
+    cap: "今ある経験の見せ方と準備を固めるフェーズの冒険者",
+    state: "テスト・保守が中心で、設計・実装の経験はこれから、という段階かもしれません。ただ、テストや保守の経験も「書き方しだい」で立派な材料になります。今は転職を急ぐより、経験の見せ方を整えて準備する時期です。",
+    next: "今ある経験（テスト観点・不具合対応・品質改善への関わりなど）を棚卸しして、書ける材料に変えるところから始めましょう。無料の棚卸しシートで現状を整理し、足りない経験を把握するのが次の一手です。",
+  },
+  D: {
+    name: "情報収集スタートタイプ",
+    cap: "まずは自己整理と情報収集から始める冒険者",
+    state: "転職準備や経験の整理はこれからの段階のようです。いきなり転職活動を始めるより、まず自分の経験を整理して、どんな選択肢があるかを知るところから始めると、遠回りせずに済みます。",
+    next: "まずは無料の棚卸しシートで自分の経験を整理し、どんなキャリアの選択肢があるかを知ることから始めましょう。焦らず情報収集をしながら、準備を進めていくのがおすすめです。",
+  },
+};
+
+/* ===== アフィリ/CTA リンク ===== */
+const LINKS = {
+  freeTemplate: "./tanaoroshi-sheet.html",   // 無料テンプレ（棚卸しシート）
+  techgo: "https://px.a8.net/svt/ejp?a8mat=4B3Y3C+AUKDMA+5B0Y+HVV0H",
+  onecareer: "https://px.a8.net/svt/ejp?a8mat=4B3Y3C+B8US4Y+5O7E+BWVTE",
+};
+
+/* ===== State ===== */
+let cur = 0;
+const answers = []; // 各設問の選択index（multiは配列）
+
+function start() {
+  cur = 0;
+  answers.length = 0;
+  show("quiz");
+  renderQ();
+}
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+function renderQ() {
+  const Q = QUESTIONS[cur];
+  document.getElementById("pLabel").textContent = `質問 ${cur + 1} / ${QUESTIONS.length}`;
+  document.getElementById("pFill").style.width = ((cur) / QUESTIONS.length * 100) + "%";
+  document.getElementById("qNum").textContent = "Q." + (cur + 1);
+  document.getElementById("qText").textContent = Q.q;
+  document.getElementById("qHint").textContent = Q.hint || "";
+  document.getElementById("multiHint").style.display = Q.type === "multi" ? "block" : "none";
+  document.getElementById("backBtn").style.display = cur > 0 ? "block" : "none";
+
+  const cur_ans = answers[cur];
+  const optsEl = document.getElementById("opts");
+  optsEl.innerHTML = "";
+  Q.opts.forEach((o, i) => {
+    const sel = Q.type === "multi"
+      ? Array.isArray(cur_ans) && cur_ans.includes(i)
+      : cur_ans === i;
+    const div = document.createElement("div");
+    div.className = "opt" + (sel ? " selected" : "");
+    div.innerHTML = `<span class="check">${sel ? "&#10003;" : ""}</span><span>${o.t}</span>`;
+    div.onclick = () => pick(i);
+    optsEl.appendChild(div);
+  });
+  updateNext();
+}
+
+function pick(i) {
+  const Q = QUESTIONS[cur];
+  if (Q.type === "multi") {
+    let arr = Array.isArray(answers[cur]) ? answers[cur].slice() : [];
+    if (arr.includes(i)) arr = arr.filter(x => x !== i);
+    else arr.push(i);
+    answers[cur] = arr;
+  } else {
+    answers[cur] = i;
+  }
+  renderQ();
+}
+
+function updateNext() {
+  const Q = QUESTIONS[cur];
+  const a = answers[cur];
+  const ok = Q.type === "multi" ? (Array.isArray(a) && a.length > 0) : (a !== undefined && a !== null);
+  document.getElementById("nextBtn").disabled = !ok;
+}
+
+function next() {
+  if (cur < QUESTIONS.length - 1) { cur++; renderQ(); }
+  else finish();
+}
+function back() { if (cur > 0) { cur--; renderQ(); } }
+function restart() { show("intro"); }
+
+/* ===== スコア計算 & タイプ判定 ===== */
+function finish() {
+  const sc = { jitsumu: 0, sekkei: 0, buki: 0, junbi: 0, risk: 0 };
+  QUESTIONS.forEach((Q, qi) => {
+    const a = answers[qi];
+    const idxs = Q.type === "multi" ? (a || []) : [a];
+    idxs.forEach(i => {
+      const s = Q.opts[i].s || {};
+      for (const k in s) sc[k] += s[k];
+    });
+  });
+
+  // タイプ判定ロジック
+  let type;
+  const exp = sc.jitsumu + sc.sekkei; // 経験総量
+  if (sc.junbi <= 1 && exp <= 4) {
+    type = "D"; // 情報収集・準備浅い
+  } else if (exp <= 4 && sc.sekkei <= 1) {
+    type = "C"; // 経験値・準備
+  } else if (sc.risk >= 3 || (exp >= 5 && sc.buki <= 2)) {
+    type = "B"; // 経験あるが言語化が課題
+  } else if (exp >= 5 && sc.buki >= 3) {
+    type = "A"; // 材料そろっている
+  } else {
+    type = "B"; // デフォルト
+  }
+
+  renderResult(type, sc);
+}
+
+function stars(n, max) {
+  n = Math.max(0, Math.min(max, n));
+  let h = "";
+  for (let i = 0; i < max; i++) h += i < n ? '<span class="star-on">&#9733;</span>' : '<span class="star-off">&#9734;</span>';
+  return h;
+}
+
+function renderResult(type, sc) {
+  const T = TYPES[type];
+  document.getElementById("rEmblem").textContent = type;
+  document.getElementById("rName").textContent = T.name;
+  document.getElementById("rCap").textContent = T.cap;
+
+  // ステータス（5段階に正規化）
+  const jitsumuStar = Math.round(Math.min(5, sc.jitsumu / 2 + 1));
+  const sekkeiStar = Math.round(Math.min(5, sc.sekkei + 1));
+  const bukiStar = Math.round(Math.min(5, sc.buki + 1));
+  const junbiStar = Math.round(Math.min(5, sc.junbi + 1));
+  document.getElementById("rStats").innerHTML = `
+    <div class="stat-row"><span class="stat-label">実務経験</span><span class="stars">${stars(jitsumuStar,5)}</span></div>
+    <div class="stat-row"><span class="stat-label">設計・上流経験</span><span class="stars">${stars(sekkeiStar,5)}</span></div>
+    <div class="stat-row"><span class="stat-label">書類武器度</span><span class="stars">${stars(bukiStar,5)}</span></div>
+    <div class="stat-row"><span class="stat-label">脱SES準備度</span><span class="stars">${stars(junbiStar,5)}</span></div>
+  `;
+
+  document.getElementById("rState").textContent = T.state;
+  document.getElementById("rNext").textContent = T.next;
+
+  // 武器（強み）— 回答から動的生成
+  const strengths = [];
+  const a3 = answers[2] || []; // 担当工程
+  const procLabels = QUESTIONS[2].opts;
+  a3.forEach(i => { if (i <= 3) strengths.push(procLabels[i].t + "の実務経験"); else strengths.push(procLabels[i].t); });
+  const a8 = answers[7] || []; // 工夫
+  const kufuLabels = QUESTIONS[7].opts;
+  a8.forEach(i => { if (!kufuLabels[i].t.startsWith("特にない")) strengths.push(kufuLabels[i].t); });
+  if (strengths.length === 0) strengths.push("現場での実務経験");
+  document.getElementById("rStrength").innerHTML =
+    [...new Set(strengths)].slice(0, 8).map(s => `<span class="tag">${s}</span>`).join("");
+
+  // 足りない装備
+  const lacks = [];
+  if (sc.sekkei <= 1) lacks.push("設計経験");
+  if (sc.buki <= 2) lacks.push("成果の言語化");
+  if (sc.risk >= 2) lacks.push("自己PRの整理");
+  if (sc.risk >= 2) lacks.push("面接で話せるエピソード");
+  if (lacks.length === 0) lacks.push("数値での成果の補強");
+  document.getElementById("rLack").innerHTML =
+    [...new Set(lacks)].map(s => `<span class="tag lack">${s}</span>`).join("");
+
+  // 職務経歴書に書けそうな材料
+  document.getElementById("rMaterial").innerHTML = `
+    <li>どの機能・システムを担当したか</li>
+    <li>どんな観点・役割で関わったか</li>
+    <li>どんな不具合・課題に対応したか</li>
+    <li>開発担当やチームとどう連携したか</li>
+    <li>品質改善・効率化にどう関わったか</li>
+  `;
+
+  // CTA（タイプ別）
+  document.getElementById("ctaArea").innerHTML = buildCTA(type);
+
+  show("result");
+}
+
+function buildCTA(type) {
+  const free = `<a class="btn gold" href="${LINKS.freeTemplate}">&#128229; 無料の職務経歴書 棚卸しシートを受け取る</a>`;
+  const techgo = `<a class="btn" href="${LINKS.techgo}" target="_blank" rel="noopener nofollow">&#128269; 市場価値を確認する（IT特化）<br><span class="pr-tag">経験者向け・PR</span></a>`;
+  const onecareer = `<a class="btn" href="${LINKS.onecareer}" target="_blank" rel="noopener nofollow">&#128270; 求人の選択肢を広く見る<br><span class="pr-tag">情報収集向け・PR</span></a>`;
+
+  let html = `<div class="cta-label">&#9876; 次のクエスト</div>`;
+  if (type === "A") {
+    // 準備度高い → 市場価値確認を前に
+    html += techgo + free;
+  } else if (type === "B") {
+    html += free + onecareer;
+  } else if (type === "C") {
+    html += free;
+  } else { // D
+    html += free + onecareer;
+  }
+  return html;
+}
+
+function share() {
+  const name = document.getElementById("rName").textContent;
+  const text = `脱SES診断ラボで装備（経験）を整理してみた。\n結果は「${name}」。\n職務経歴書に書ける形で経験を整理するのが大事らしい。\n#脱SES診断ラボ`;
+  const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+  window.open(url, "_blank", "noopener");
+}
+</script>
+</body>
+</html>
